@@ -1,0 +1,15 @@
+repos:
+    - repo: local
+      hooks:
+          - id: ruff-check
+            name: ruff check
+            entry: uv run --project bindings/python --group dev ruff check bindings/python
+            language: system
+            pass_filenames: false
+
+          - id: pytest
+            name: pytest
+            entry: uv run --project bindings/python --group dev pytest bindings/python/tests
+            language: system
+            pass_filenames: false
+            always_run: true

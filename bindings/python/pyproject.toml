@@ -1,0 +1,40 @@
+[project]
+name = "xdgame"
+version = "0.1.0"
+description = "Python bindings for the 10d_game WebAssembly module"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "numpy>=2.5.1",
+    "pillow>=12.3.0",
+    "wasmtime>=47.0.1",
+]
+
+[project.optional-dependencies]
+gui = [
+    "pygame-ce>=2.5.7",
+]
+
+[project.scripts]
+xdgame-play = "xdgame._play_cli:main"
+xdgame-render-map = "xdgame._map_cli:main"
+
+[build-system]
+requires = ["uv_build>=0.11.14,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+    "pytest>=9.1.1",
+    "ruff>=0.16.2",
+]
+docs = [
+    "sphinx>=9.1.0",
+]
+
+[tool.ruff]
+target-version = "py314"
+
+[tool.ruff.lint]
+extend-select = ["I"]

@@ -1,0 +1,35 @@
+---
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  misc-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-math-missing-parentheses,
+WarningsAsErrors: '*'
+HeaderFilterRegex: '(^|.*/)10d_game\.[ch]$'
+SystemHeaders: false
+CheckOptions:
+  - key: bugprone-argument-comment.StrictMode
+    value: true
+  - key: bugprone-misplaced-widening-cast.CheckImplicitCasts
+    value: true
+  - key: bugprone-sizeof-expression.WarnOnSizeOfIntegerExpression
+    value: true
+  - key: bugprone-suspicious-string-compare.WarnOnLogicalNotComparison
+    value: true
+  - key: readability-else-after-return.WarnOnUnfixable
+    value: true
+  - key: readability-else-after-return.WarnOnConditionVariables
+    value: true
+  - key: readability-inconsistent-declaration-parameter-name.Strict
+    value: true
+...

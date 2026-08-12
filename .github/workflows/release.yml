@@ -1,0 +1,41 @@
+name: Release artifacts
+
+on:
+    push:
+        tags:
+            - "v*"
+
+permissions:
+    contents: write
+
+jobs:
+    release-artifacts:
+        name: Build release artifacts
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v5
+              with:
+                  submodules: recursive
+
+            - name: Install Emscripten
+              run: |
+                  ./3rd-party/emsdk/emsdk install latest
+                  ./3rd-party/emsdk/emsdk activate latest
+
+            - name: Build WebAssembly and browser interface
+              run: make html
+
+            - name: Read release description
+              run: git show -s --format=%B HEAD > release-notes.md
+
+            - name: Create GitHub release
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh release create "${{ github.ref_name }}" \
+                      build/10d_game.wasm \
+                      build/10d_game.html \
+                      --verify-tag \
+                      --title "${{ github.ref_name }}" \
+                      --notes-file release-notes.md
