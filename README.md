@@ -1,8 +1,8 @@
 # 10d-game
 
-[![Play in browser](https://img.shields.io/badge/play-in%20browser-2f855a)](https://fractal-brain-ai.github.io/10d-game/)
-[![C API documentation](https://img.shields.io/badge/docs-C%20API-00e5ff)](https://fractal-brain-ai.github.io/10d-game/c-api/)
-[![Python documentation](https://img.shields.io/badge/docs-Python-3776ab)](https://fractal-brain-ai.github.io/10d-game/python/)
+[![Play in browser](https://img.shields.io/badge/play-in%20browser-2f855a)](https://fractalbrain-ai.github.io/10d-game/)
+[![C API documentation](https://img.shields.io/badge/docs-C%20API-00e5ff)](https://fractalbrain-ai.github.io/10d-game/c-api/)
+[![Python documentation](https://img.shields.io/badge/docs-Python-3776ab)](https://fractalbrain-ai.github.io/10d-game/python/)
 
 10d-game is a small C game engine intended for AI-agent experiments. An agent
 observes a square field of view and chooses one action per tick from a compact
@@ -26,14 +26,14 @@ $CC your_program.c 10d_game.o -lm
 ```
 
 Alternatively, each tagged release provides a compiled
-[`10d_game.wasm` module](https://github.com/fractal-brain-ai/10d-game/releases/latest/download/10d_game.wasm).
+[`10d_game.wasm` module](https://github.com/fractalbrain-ai/10d-game/releases/latest/download/10d_game.wasm).
 The [Python binding](bindings/python) loads this module through Wasmtime rather
 than compiling a platform-specific extension, which keeps the binding highly
 portable across platforms supported by its runtime.
 
 The same WASM module is also bundled with the browser interface into a single,
 self-contained HTML file. You can
-[play 10d-game directly in your browser](https://fractal-brain-ai.github.io/10d-game/)
+[play 10d-game directly in your browser](https://fractalbrain-ai.github.io/10d-game/)
 without installing anything or running a server.
 
 ## Engine files
@@ -55,7 +55,7 @@ without installing anything or running a server.
   The result can be opened directly from disk without a web server. It provides
   a simple human interface for observing the field of view and controlling the
   agent. The latest tagged release is also available as a
-  [hosted browser game](https://fractal-brain-ai.github.io/10d-game/).
+  [hosted browser game](https://fractalbrain-ai.github.io/10d-game/).
 
 - [`bindings/python`](bindings/python) contains the Python binding. It loads the
   WebAssembly module through Wasmtime, exposes a Python API, returns images as

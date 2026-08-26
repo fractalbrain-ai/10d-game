@@ -1,6 +1,6 @@
 # 10d-game Python bindings
 
-[![Python documentation](https://img.shields.io/badge/docs-Python-3776ab)](https://fractal-brain-ai.github.io/10d-game/python/)
+[![Python documentation](https://img.shields.io/badge/docs-Python-3776ab)](https://fractalbrain-ai.github.io/10d-game/python/)
 
 The `xdgame` package provides Python bindings for the 10d-game engine. It loads
 the engine as a WebAssembly module through [Wasmtime](https://wasmtime.dev/) and
@@ -25,7 +25,7 @@ make wasm
 
 This creates `build/10d_game.wasm`, which callers pass to the Python binding
 when loading the engine. Alternatively, download
-[`10d_game.wasm` from the latest tagged release](https://github.com/fractal-brain-ai/10d-game/releases/latest/download/10d_game.wasm).
+[`10d_game.wasm` from the latest tagged release](https://github.com/fractalbrain-ai/10d-game/releases/latest/download/10d_game.wasm).
 Then create a virtual environment and install the Python package:
 
 ```bash
