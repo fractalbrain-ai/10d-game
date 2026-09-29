@@ -1,9 +1,9 @@
 # 10d-game
 
-[![Play in browser](https://img.shields.io/badge/play-in%20browser-2f855a)](https://fractalbrain-ai.github.io/10d-game/)
-[![C API documentation](https://img.shields.io/badge/docs-C%20API-00e5ff)](https://fractalbrain-ai.github.io/10d-game/c-api/)
-[![Python documentation](https://img.shields.io/badge/docs-Python-3776ab)](https://fractalbrain-ai.github.io/10d-game/python/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-6c757d)](LICENSE)
+[![Play in browser](https://img.shields.io/badge/play-in%20browser-2B7A78)](https://fractalbrain-ai.github.io/10d-game/)
+[![C API documentation](https://img.shields.io/badge/docs-C%20API-5C677D)](https://fractalbrain-ai.github.io/10d-game/c-api/)
+[![Python documentation](https://img.shields.io/badge/docs-Python-3776AB)](https://fractalbrain-ai.github.io/10d-game/python/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-B08900)](LICENSE)
 
 10d-game is a small C game engine intended for AI-agent experiments. An agent
 observes a square field of view and chooses one action per tick from a compact
