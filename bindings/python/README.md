@@ -36,8 +36,12 @@ uv pip install .
 
 ## Quick example
 
-The following example creates a game from the engine defaults, advances it by
-one tick, and obtains both the agent's field of view and a larger rendered map:
+The following example creates a game with the engine defaults, advances it by
+one tick, and retrieves the agent's field of view together with a larger map of
+the surrounding world. Both images are NumPy arrays with dtype `numpy.uint8`
+and shape `(height, width, 3)`. They store RGB pixels in row-major order, with
+the red, green, and blue values in the final dimension. Row zero represents the
+lowest world row in the image.
 
 ```python
 from pathlib import Path
@@ -54,14 +58,19 @@ with xdgame.Game(wasm_path, seed=42) as game:
         time=0,
     )
 
-print(f"reward: {reward}")
+print(f"       reward: {reward}")
 print(f"field of view: {fov.shape}")
-print(f"map: {map_image.shape}")
+print(f"          map: {map_image.shape}")
 ```
 
 Run the example from the repository root so that the relative path to the
-WebAssembly module resolves correctly. Both images have the shape
-`(height, width, 3)` and the data type `numpy.uint8`.
+WebAssembly module resolves correctly. It prints:
+
+```text
+       reward: 1.0
+field of view: (25, 25, 3)
+          map: (256, 256, 3)
+```
 
 ## Render a map from the command line
 
