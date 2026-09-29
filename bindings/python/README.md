@@ -72,6 +72,11 @@ field of view: (25, 25, 3)
           map: (256, 256, 3)
 ```
 
+For agent-training loops, the package also provides `XDGameEnv`, a Gym-style
+interface with the canonical `reset()`, `step()`, and `close()` methods. See the
+[Python documentation](https://fractal-brain-ai.github.io/10d-game/python/) for
+details.
+
 ## Render a map from the command line
 
 The game world is generated procedurally and deterministically from its seed and
