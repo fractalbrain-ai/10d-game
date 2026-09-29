@@ -21,6 +21,7 @@ WASM_EXPORTS := [\
     "_xdgame_get_satiety_level",\
     "_xdgame_get_hydration_level",\
     "_xdgame_get_inventory_count",\
+    "_xdgame_reveal_last_eaten_flavor",\
     "_xdgame_get_fov_r",\
     "_xdgame_get_fov_g",\
     "_xdgame_get_fov_b",\

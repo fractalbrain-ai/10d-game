@@ -138,6 +138,7 @@ struct xdgame_state
     float satiety;
     float hydration;
     bean_flavor_t inventory;
+    bean_flavor_t last_eaten_flavor;
 
     uint32_t *pang_ticks;
     uint32_t pending_pangs;
@@ -920,6 +921,7 @@ xdgame_state_t *xdgame_new_game(uint32_t seed, const xdgame_config_t *cfg)
         .satiety = MAX_SATIETY_LEVEL,
         .hydration = MAX_HYDRATION_LEVEL,
         .inventory = NO_BEAN,
+        .last_eaten_flavor = NO_BEAN,
         .pang_ticks = NULL,
         .pending_pangs = 0,
         .patch_lookup =
@@ -1239,6 +1241,7 @@ int xdgame_set_agent(xdgame_state_t *game, int32_t x, int32_t y)
         break;
     }
 
+    game->last_eaten_flavor = flavor;
     set_flavor(patch, local_x, local_y, NO_BEAN);
 
     return reward;
@@ -1247,6 +1250,8 @@ int xdgame_set_agent(xdgame_state_t *game, int32_t x, int32_t y)
 float xdgame_tick(xdgame_state_t *game, xdgame_action_t action)
 {
     assert(game != NULL);
+
+    game->last_eaten_flavor = NO_BEAN;
 
     {
         uint32_t n = 0;
@@ -1366,6 +1371,25 @@ float xdgame_get_hydration_level(const xdgame_state_t *game)
 uint32_t xdgame_get_inventory_count(const xdgame_state_t *game)
 {
     return (uint32_t)(game->inventory != NO_BEAN);
+}
+
+uint32_t xdgame_reveal_last_eaten_flavor(const xdgame_state_t *game)
+{
+    switch (game->last_eaten_flavor)
+    {
+    case NO_BEAN:
+        return 0U;
+    case SATIETY_BEAN:
+        return 1U;
+    case HYDRATION_BEAN:
+        return 2U;
+    case SALTY_BEAN:
+        return 3U;
+    case BITTER_BEAN:
+        return 4U;
+    }
+
+    return 0U;
 }
 
 const uint8_t *xdgame_get_fov_r(const xdgame_state_t *game)

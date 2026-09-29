@@ -28,7 +28,9 @@ class XDGameEnv:
     an engine-defined terminal state.
 
     The FoV contains the engine's raw three channels and is not converted to
-    display colors.
+    display colors. After each step, the information dictionary reports which
+    bean flavor was eaten as privileged evaluation information; this value is
+    not part of the observation and must not be used to select actions.
 
     :param wasm: Path to a ``10d_game.wasm`` file or its in-memory contents.
     :param seed: Unsigned 32-bit world seed.
@@ -129,10 +131,15 @@ class XDGameEnv:
         This environment has no terminal state or time limit, so the returned
         ``terminated`` and ``truncated`` values are always ``False``.
 
+        The information dictionary contains ``"eaten_bean_flavor"``. Its value
+        is ``None`` when no bean was eaten, or ``"satiety"``, ``"hydration"``,
+        ``"salty"``, or ``"bitter"`` otherwise. This is privileged evaluation
+        information and must not be used by an agent to select actions.
+
         :param action: Integer value corresponding to a member of
             :class:`xdgame.Action`.
-        :return: Observation, reward, ``False``, ``False``, and an empty
-            information dictionary.
+        :return: Observation, reward, ``False``, ``False``, and evaluation
+            information for the transition.
         :raises TypeError: If ``action`` is not an integer.
         :raises ValueError: If ``action`` is not a defined
             :class:`xdgame.Action` value.
@@ -146,8 +153,11 @@ class XDGameEnv:
         except ValueError as error:
             raise ValueError(f"invalid action: {action!r}") from error
 
-        reward = self._require_game().tick(game_action)
-        return self._get_observation(), reward, False, False, {}
+        game = self._require_game()
+        reward = game.tick(game_action)
+        info = {"eaten_bean_flavor": game.reveal_last_eaten_flavor()}
+
+        return self._get_observation(), reward, False, False, info
 
     def close(self) -> None:
         """Release the underlying game and WebAssembly runtime.

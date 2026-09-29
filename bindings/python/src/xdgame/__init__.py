@@ -50,7 +50,9 @@ Besides :class:`Game`, xdgame also provides a Gym-style API through
 :class:`XDGameEnv`, with the canonical ``reset()``, ``step()``, and ``close()``
 functions. Its observations contain the FoV, satiety level, hydration level,
 and inventory count. Use :meth:`XDGameEnv.actions` to inspect all accepted
-actions.
+actions. After each step, the information dictionary reports which bean flavor
+was eaten. This is privileged evaluation information: it is not part of the
+observation and must not be used by the agent to select actions.
 
 .. code-block:: python
 
@@ -67,6 +69,18 @@ actions.
 The task is intentionally infinite, so ``terminated`` and ``truncated`` are
 always false. Call :meth:`XDGameEnv.reset` at any time to restore the
 environment to its initial state.
+
+Evaluation information
+~~~~~~~~~~~~~~~~~~~~~~
+
+:meth:`XDGameEnv.step` reports the bean flavor eaten during the transition in
+``info["eaten_bean_flavor"]``. The value is ``"satiety"``, ``"hydration"``,
+``"salty"``, or ``"bitter"`` when a bean was eaten, and ``None`` otherwise.
+
+This value is privileged evaluation information. It is not part of the
+observation and must not be used by the agent to select actions. Code using
+:class:`Game` directly can reveal the same value with
+:meth:`Game.reveal_last_eaten_flavor`.
 
 Game configuration and TOML
 ---------------------------

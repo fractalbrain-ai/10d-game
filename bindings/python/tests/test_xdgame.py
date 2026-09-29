@@ -156,10 +156,67 @@ def test_gym_environment(wasm_path: Path, game_seed: int) -> None:
         assert obs1["fov"].ndim == 3
         assert obs1["fov"].dtype == np.uint8
 
-        obs2, reward, terminated, truncated, _ = env.step(xdgame.Action.NOP)
+        obs2, reward, terminated, truncated, info = env.step(xdgame.Action.NOP)
         assert obs1["fov"].tolist() == obs2["fov"].tolist()
         assert np.isfinite(reward)
         assert not terminated
         assert not truncated
+        assert "eaten_bean_flavor" in info
+        assert info["eaten_bean_flavor"] is None
+    finally:
+        env.close()
+
+
+@pytest.mark.parametrize("target_eaten_beans", [100])
+def test_gym_bean_color_flavor_consistency(
+    target_eaten_beans, wasm_path: Path, game_seed: int
+) -> None:
+    config = xdgame.default_config(wasm_path, bean_density=0.1)
+    env = xdgame.XDGameEnv(wasm_path, game_seed, config)
+    try:
+        observation, _ = env.reset()
+        color_to_flavor = {}
+        eaten_beans = 0
+        steps = 0
+
+        fov_shape = observation["fov"].shape[:2]
+        y0, x0 = np.array(fov_shape) // 2
+
+        max_steps = max(fov_shape) * target_eaten_beans
+        while eaten_beans < target_eaten_beans and steps < max_steps:
+            fov = observation["fov"]
+            occupied = np.any(fov[..., :2] != 0, axis=-1)
+            y, x = np.argwhere(occupied).T
+
+            dx, dy = x - x0, y - y0
+            idx = np.argmin(np.abs(dx) + np.abs(dy))
+
+            x, y = x[idx], y[idx]
+            dx, dy = x - x0, y - y0
+            color = tuple(fov[y, x, :2].tolist())
+
+            actions = [
+                xdgame.Action.MOVE_EAST if dx > 0 else xdgame.Action.MOVE_WEST
+            ] * abs(dx) + [
+                xdgame.Action.MOVE_NORTH if dy > 0 else xdgame.Action.MOVE_SOUTH
+            ] * abs(dy)
+            steps += len(actions)
+
+            for action in actions:
+                observation, _, _, _, info = env.step(action)
+                assert info["eaten_bean_flavor"] is None
+
+            observation, _, _, _, info = env.step(xdgame.Action.EAT_BEAN)
+            eaten_beans += 1
+
+            flavor = info["eaten_bean_flavor"]
+            assert isinstance(flavor, str)
+
+            if color in color_to_flavor:
+                assert color_to_flavor[color] == flavor
+            else:
+                color_to_flavor[color] = flavor
+
+        assert eaten_beans == 100
     finally:
         env.close()

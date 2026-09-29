@@ -396,7 +396,9 @@ int xdgame_set_agent(xdgame_state_t *game, int32_t x, int32_t y);
  * tick, and increments the internal tick counter before returning. Invalid or
  * inapplicable actions behave as no-ops. Query the resulting agent state with
  * ::xdgame_get_satiety_level(), ::xdgame_get_hydration_level(), and
- * ::xdgame_get_inventory_count().
+ * ::xdgame_get_inventory_count(). For privileged evaluation, the bean flavor
+ * eaten during this tick can be queried with
+ * ::xdgame_reveal_last_eaten_flavor().
  *
  * \param game Game returned by ::xdgame_new_game().
  * \param action Action to apply.
@@ -439,6 +441,30 @@ float xdgame_get_hydration_level(const xdgame_state_t *game);
  */
 [[nodiscard]]
 uint32_t xdgame_get_inventory_count(const xdgame_state_t *game);
+
+/**
+ * \brief Returns the bean flavor eaten during the most recently completed
+ * tick.
+ *
+ * This is privileged evaluation information and is not part of the agent's
+ * observation. It must not be used by an agent to select actions. Calling this
+ * function does not modify or consume the stored value.
+ *
+ * The returned integer has the following meaning:
+ *
+ * - 0: No bean was eaten.
+ * - 1: A satiety bean was eaten.
+ * - 2: A hydration bean was eaten.
+ * - 3: A salty bean was eaten.
+ * - 4: A bitter bean was eaten.
+ *
+ * Before the first tick, this function returns 0.
+ *
+ * \param game Game returned by ::xdgame_new_game().
+ * \return Flavor encoding for the most recently eaten bean.
+ */
+[[nodiscard]]
+uint32_t xdgame_reveal_last_eaten_flavor(const xdgame_state_t *game);
 
 /**
  * \brief Returns the borrowed red field-of-view channel.

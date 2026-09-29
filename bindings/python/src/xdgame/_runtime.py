@@ -77,6 +77,7 @@ _FUNCTION_EXPORTS = (
     "xdgame_get_satiety_level",
     "xdgame_get_hydration_level",
     "xdgame_get_inventory_count",
+    "xdgame_reveal_last_eaten_flavor",
     "xdgame_get_fov_r",
     "xdgame_get_fov_g",
     "xdgame_get_fov_b",
@@ -425,6 +426,30 @@ class Game:
         return int(
             self._runtime.call("xdgame_get_inventory_count", self._require_pointer())
         )
+
+    def reveal_last_eaten_flavor(self) -> str | None:
+        """Reveal the bean flavor eaten during the most recent tick.
+
+        This is privileged evaluation information and is not part of the
+        agent's observation. It must not be used by the agent to select
+        actions. Calling this method does not modify or consume the stored
+        value.
+
+        :return: ``"satiety"``, ``"hydration"``, ``"salty"``, or
+            ``"bitter"`` when a bean was eaten; otherwise ``None``.
+        :raises XDGameError: If the game is closed or the engine returns an
+            invalid flavor encoding.
+        """
+        flavor = int(
+            self._runtime.call(
+                "xdgame_reveal_last_eaten_flavor", self._require_pointer()
+            )
+        )
+        flavors = [None, "satiety", "hydration", "salty", "bitter"]
+        if not 0 <= flavor < len(flavors):
+            raise XDGameError(f"engine returned an invalid bean flavor: {flavor}")
+
+        return flavors[flavor]
 
     @property
     def fov(self) -> NDArray[np.uint8]:
