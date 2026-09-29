@@ -95,50 +95,32 @@
                 background: #242424;
             }
 
-            #reward {
-                font-size: 1.2rem;
+            .history {
+                margin: 10px 0;
+            }
+
+            .history-label {
+                margin-bottom: 3px;
+            }
+
+            .history-row {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 72px;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .history-plot {
+                display: block;
+                width: 100%;
+                height: 34px;
+                border: 1px solid #444444;
+                background: #1d1d1d;
+            }
+
+            .history-value {
+                align-self: start;
                 font-variant-numeric: tabular-nums;
-            }
-
-            .resource {
-                margin: 20px 0;
-            }
-
-            .resource-label {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 6px;
-            }
-
-            .bar {
-                position: relative;
-                height: 18px;
-                overflow: hidden;
-                border: 1px solid #777777;
-                background: #444444;
-            }
-
-            .bar::after {
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                left: 50%;
-                width: 1px;
-                content: "";
-                background: #aaaaaa;
-            }
-
-            .bar-fill {
-                height: 100%;
-                transition: width 80ms linear;
-            }
-
-            #satiety-fill {
-                background: #66bb6a;
-            }
-
-            #hydration-fill {
-                background: #42a5f5;
             }
 
             #inventory {
@@ -215,39 +197,45 @@
 
                 <aside id="status-panel">
                     <h2>Status</h2>
-                    <div id="reward">Reward: 0.00</div>
-
-                    <div class="resource">
-                        <div class="resource-label">
-                            <span>Satiety</span>
-                            <span id="satiety-value">100.0</span>
-                        </div>
-                        <div
-                            id="satiety-bar"
-                            class="bar"
-                            role="meter"
-                            aria-label="Satiety"
-                            aria-valuemin="-100"
-                            aria-valuemax="100"
-                        >
-                            <div id="satiety-fill" class="bar-fill"></div>
+                    <div class="history">
+                        <div class="history-label">Reward</div>
+                        <div class="history-row">
+                            <canvas
+                                id="reward-history"
+                                class="history-plot"
+                                aria-label="Cumulative reward over the last 100 ticks"
+                            ></canvas>
+                            <span id="reward-value" class="history-value"
+                                >0.00</span
+                            >
                         </div>
                     </div>
 
-                    <div class="resource">
-                        <div class="resource-label">
-                            <span>Hydration</span>
-                            <span id="hydration-value">100.0</span>
+                    <div class="history">
+                        <div class="history-label">Satiety</div>
+                        <div class="history-row">
+                            <canvas
+                                id="satiety-history"
+                                class="history-plot"
+                                aria-label="Satiety over the last 100 ticks"
+                            ></canvas>
+                            <span id="satiety-value" class="history-value"
+                                >+100.0</span
+                            >
                         </div>
-                        <div
-                            id="hydration-bar"
-                            class="bar"
-                            role="meter"
-                            aria-label="Hydration"
-                            aria-valuemin="-100"
-                            aria-valuemax="100"
-                        >
-                            <div id="hydration-fill" class="bar-fill"></div>
+                    </div>
+
+                    <div class="history">
+                        <div class="history-label">Hydration</div>
+                        <div class="history-row">
+                            <canvas
+                                id="hydration-history"
+                                class="history-plot"
+                                aria-label="Hydration over the last 100 ticks"
+                            ></canvas>
+                            <span id="hydration-value" class="history-value"
+                                >+100.0</span
+                            >
                         </div>
                     </div>
 
@@ -345,7 +333,12 @@
 
             const REPEAT_DELAY_MS = 500;
             const REPEAT_INTERVAL_MS = 100;
+            const HISTORY_LENGTH = 100;
+            const HISTORY_POINT_RADIUS = 4;
             const UINT32_MAX = 4294967295;
+            const REWARD_COLOR = "#ffca28";
+            const SATIETY_COLOR = "#66bb6a";
+            const HYDRATION_COLOR = "#42a5f5";
             const BEAN_BORDER_COLOR = "#00e5ff";
             const AGENT_BORDER_COLOR = "#39ff14";
             const CELL_BORDER_WIDTH = 2;
@@ -621,7 +614,14 @@
             const gameMeta = document.querySelector("#game-meta");
             const canvas = document.querySelector("#fov");
             const context = canvas.getContext("2d");
-            const rewardElement = document.querySelector("#reward");
+            const rewardPlot = document.querySelector("#reward-history");
+            const satietyPlot = document.querySelector("#satiety-history");
+            const hydrationPlot = document.querySelector(
+                "#hydration-history",
+            );
+            const rewardValue = document.querySelector("#reward-value");
+            const satietyValue = document.querySelector("#satiety-value");
+            const hydrationValue = document.querySelector("#hydration-value");
             const inventoryDot = document.querySelector("#inventory-dot");
             const inventoryText = document.querySelector("#inventory-text");
 
@@ -632,6 +632,9 @@
             let cumulativeReward = 0;
             let fovSize = 0;
             let twoColumnWidth = 0;
+            const rewardHistory = [];
+            const satietyHistory = [];
+            const hydrationHistory = [];
             const heldKeys = new Map();
 
             function normalizedKey(event) {
@@ -687,15 +690,138 @@
                 }
             }
 
-            function updateBar(name, value) {
-                const fraction = Math.min(1, Math.max(0, (value + 100) / 200));
-                document.querySelector(`#${name}-value`).textContent =
-                    value.toFixed(1);
-                document.querySelector(`#${name}-fill`).style.width =
-                    `${fraction * 100}%`;
-                document
-                    .querySelector(`#${name}-bar`)
-                    .setAttribute("aria-valuenow", value);
+            function appendHistory(history, value) {
+                history.push(value);
+                if (history.length > HISTORY_LENGTH) {
+                    history.shift();
+                }
+            }
+
+            function drawHistory(canvasElement, values, color) {
+                const width = canvasElement.clientWidth;
+                const height = canvasElement.clientHeight;
+                if (width === 0 || height === 0 || values.length === 0) {
+                    return;
+                }
+
+                const pixelRatio = window.devicePixelRatio || 1;
+                const pixelWidth = Math.round(width * pixelRatio);
+                const pixelHeight = Math.round(height * pixelRatio);
+                if (
+                    canvasElement.width !== pixelWidth ||
+                    canvasElement.height !== pixelHeight
+                ) {
+                    canvasElement.width = pixelWidth;
+                    canvasElement.height = pixelHeight;
+                }
+
+                const plotContext = canvasElement.getContext("2d");
+                plotContext.setTransform(
+                    pixelRatio,
+                    0,
+                    0,
+                    pixelRatio,
+                    0,
+                    0,
+                );
+                plotContext.clearRect(0, 0, width, height);
+
+                let minimum = Math.min(...values);
+                let maximum = Math.max(...values);
+                if (minimum === maximum) {
+                    minimum -= 1;
+                    maximum += 1;
+                }
+
+                const verticalRange = maximum - minimum;
+                const plotStart = HISTORY_POINT_RADIUS;
+                const plotEnd = width - HISTORY_POINT_RADIUS;
+                const usableHeight = height - 2 * HISTORY_POINT_RADIUS;
+                const xStep =
+                    (plotEnd - plotStart) / (HISTORY_LENGTH - 1);
+                const points = values.map((value, index) => ({
+                    x: plotEnd - (values.length - 1 - index) * xStep,
+                    y:
+                        height -
+                        HISTORY_POINT_RADIUS -
+                        ((value - minimum) / verticalRange) * usableHeight,
+                }));
+
+                if (points.length > 1) {
+                    plotContext.beginPath();
+                    plotContext.moveTo(points[0].x, points[0].y);
+                    for (const point of points.slice(1)) {
+                        plotContext.lineTo(point.x, point.y);
+                    }
+                    plotContext.lineCap = "round";
+                    plotContext.lineJoin = "round";
+                    plotContext.lineWidth = 1;
+                    plotContext.strokeStyle = color;
+                    plotContext.stroke();
+                }
+
+                const currentPoint = points.at(-1);
+                plotContext.beginPath();
+                plotContext.arc(
+                    currentPoint.x,
+                    currentPoint.y,
+                    HISTORY_POINT_RADIUS,
+                    0,
+                    2 * Math.PI,
+                );
+                plotContext.fillStyle = color;
+                plotContext.fill();
+
+                return currentPoint.y;
+            }
+
+            function signedFixed(value) {
+                return `${value >= 0 ? "+" : ""}${value.toFixed(1)}`;
+            }
+
+            function positionHistoryValue(element, plot, pointY) {
+                const top = Math.min(
+                    Math.max(pointY - element.offsetHeight / 2, 0),
+                    plot.clientHeight - element.offsetHeight,
+                );
+                element.style.transform = `translateY(${top}px)`;
+            }
+
+            function drawHistories() {
+                if (rewardHistory.length === 0) {
+                    return;
+                }
+
+                rewardValue.textContent = rewardFormatter.format(
+                    rewardHistory.at(-1),
+                );
+                satietyValue.textContent = signedFixed(satietyHistory.at(-1));
+                hydrationValue.textContent = signedFixed(
+                    hydrationHistory.at(-1),
+                );
+
+                const rewardY = drawHistory(
+                    rewardPlot,
+                    rewardHistory,
+                    REWARD_COLOR,
+                );
+                const satietyY = drawHistory(
+                    satietyPlot,
+                    satietyHistory,
+                    SATIETY_COLOR,
+                );
+                const hydrationY = drawHistory(
+                    hydrationPlot,
+                    hydrationHistory,
+                    HYDRATION_COLOR,
+                );
+                positionHistoryValue(rewardValue, rewardPlot, rewardY);
+                positionHistoryValue(satietyValue, satietyPlot, satietyY);
+                positionHistoryValue(
+                    hydrationValue,
+                    hydrationPlot,
+                    hydrationY,
+                );
             }
 
             function updateLayout() {
@@ -838,11 +964,7 @@
 
             function updateState() {
                 gameMeta.textContent = `Seed ${seed} · Tick ${tick}`;
-                rewardElement.textContent = `Reward: ${rewardFormatter.format(
-                    cumulativeReward,
-                )}`;
-                updateBar("satiety", engine.xdgame_get_satiety_level(game));
-                updateBar("hydration", engine.xdgame_get_hydration_level(game));
+                drawHistories();
 
                 const hasBean = engine.xdgame_get_inventory_count(game) !== 0;
                 inventoryDot.classList.toggle("full", hasBean);
@@ -857,6 +979,15 @@
                     return;
                 }
                 cumulativeReward += engine.xdgame_tick(game, action);
+                appendHistory(rewardHistory, cumulativeReward);
+                appendHistory(
+                    satietyHistory,
+                    engine.xdgame_get_satiety_level(game),
+                );
+                appendHistory(
+                    hydrationHistory,
+                    engine.xdgame_get_hydration_level(game),
+                );
                 tick += 1;
                 updateState();
             }
@@ -894,6 +1025,18 @@
                 tick = 0;
                 cumulativeReward = 0;
                 fovSize = engine.xdgame_fov_size();
+                rewardHistory.length = 0;
+                satietyHistory.length = 0;
+                hydrationHistory.length = 0;
+                appendHistory(rewardHistory, cumulativeReward);
+                appendHistory(
+                    satietyHistory,
+                    engine.xdgame_get_satiety_level(game),
+                );
+                appendHistory(
+                    hydrationHistory,
+                    engine.xdgame_get_hydration_level(game),
+                );
 
                 gameHeader.hidden = false;
                 gameView.hidden = false;
@@ -951,7 +1094,10 @@
                 clearHeldKey(normalizedKey(event)),
             );
             window.addEventListener("blur", clearHeldKeys);
-            window.addEventListener("resize", updateLayout);
+            window.addEventListener("resize", () => {
+                updateLayout();
+                drawHistories();
+            });
             window.addEventListener("beforeunload", () => {
                 if (game !== 0) {
                     engine.xdgame_free_game(game);

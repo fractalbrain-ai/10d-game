@@ -1,4 +1,5 @@
 import argparse
+from collections import deque
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -279,6 +280,9 @@ def _plasma_rgb(value: int) -> tuple[int, int, int]:
 _UINT32_MAX = (1 << 32) - 1
 _FAST_MODE_DELAY_MS = 500
 _FAST_MODE_INTERVAL_MS = 100
+_HISTORY_LENGTH = 100
+_HISTORY_VALUE_WIDTH = 80
+_HISTORY_POINT_RADIUS = 4
 
 _VIEW_SIZE = 460
 _PANEL_WIDTH = 280
@@ -287,9 +291,12 @@ _WINDOW_SIZE = _VIEW_SIZE + _PANEL_WIDTH + 3 * _MARGIN, _VIEW_SIZE + 2 * _MARGIN
 
 _BACKGROUND = "#181818"
 _PANEL_BACKGROUND = "#242424"
+_PLOT_BACKGROUND = "#1d1d1d"
+_PLOT_BORDER = "#444444"
 _TEXT = "#eeeeee"
 _MUTED_TEXT = "#aaaaaa"
-_BAR_BACKGROUND = "#444444"
+_INACTIVE_COLOR = "#444444"
+_REWARD_COLOR = "#ffca28"
 _SATIETY_COLOR = "#66bb6a"
 _HYDRATION_COLOR = "#42a5f5"
 _BEAN_BORDER_COLOR = "#00e5ff"
@@ -338,27 +345,59 @@ _ACTION_LABELS = (
 )
 
 
-def _draw_bar(
+def _draw_history(
     screen: pygame.Surface,
     font: pygame.font.Font,
     label: str,
-    value: float,
+    history: deque[float],
+    current_value: str,
     color: str,
     x: int,
     y: int,
+    width: int,
+    height: int,
 ) -> None:
-    screen.blit(font.render(f"{label}: {value:.1f}", True, _TEXT), (x, y))
+    screen.blit(font.render(label, True, _TEXT), (x, y))
 
-    bar = pygame.Rect(x, y + 25, _PANEL_WIDTH - 2 * _MARGIN, 18)
-    pygame.draw.rect(screen, _BAR_BACKGROUND, bar)
+    plot_top = y + font.get_linesize()
+    plot_bottom = y + height
+    plot_right = x + width - _HISTORY_VALUE_WIDTH
+    plot_rect = pygame.Rect(x, plot_top, plot_right - x, plot_bottom - plot_top)
 
-    fraction = min(1.0, max(0.0, (value + 100.0) / 200.0))
-    fill = bar.copy()
-    fill.width = round(bar.width * fraction)
+    pygame.draw.rect(screen, _PLOT_BACKGROUND, plot_rect)
+    pygame.draw.rect(screen, _PLOT_BORDER, plot_rect, 1)
 
-    pygame.draw.rect(screen, color, fill)
-    pygame.draw.line(screen, _MUTED_TEXT, bar.midtop, bar.midbottom)
-    pygame.draw.rect(screen, _MUTED_TEXT, bar, 1)
+    minimum = min(history)
+    maximum = max(history)
+    if minimum == maximum:
+        minimum -= 1.0
+        maximum += 1.0
+
+    vertical_range = maximum - minimum
+    usable_height = plot_bottom - plot_top - 2 * _HISTORY_POINT_RADIUS
+    plot_start = x + _HISTORY_POINT_RADIUS
+    plot_end = plot_right - _HISTORY_POINT_RADIUS
+    x_step = (plot_end - plot_start) / (_HISTORY_LENGTH - 1)
+
+    points = []
+    for index, value in enumerate(history):
+        point_x = plot_end - (len(history) - 1 - index) * x_step
+        fraction = (value - minimum) / vertical_range
+        point_y = plot_bottom - _HISTORY_POINT_RADIUS - fraction * usable_height
+        points.append((round(point_x), round(point_y)))
+
+    if len(points) > 1:
+        pygame.draw.aalines(screen, color, False, points)
+
+    current_point = points[-1]
+    pygame.draw.circle(screen, color, current_point, _HISTORY_POINT_RADIUS)
+
+    value_surface = font.render(current_value, True, _TEXT)
+    value_y = min(
+        max(current_point[1] - value_surface.get_height() // 2, plot_top),
+        plot_bottom - value_surface.get_height(),
+    )
+    screen.blit(value_surface, (plot_right + 8, value_y))
 
 
 def _draw_fov(screen: pygame.Surface, channels: NDArray[np.uint8]) -> None:
@@ -415,7 +454,9 @@ def _draw(
     game: Game,
     font: pygame.font.Font,
     heading_font: pygame.font.Font,
-    cumulative_reward: float,
+    reward_history: deque[float],
+    satiety_history: deque[float],
+    hydration_history: deque[float],
 ) -> None:
     screen.fill(_BACKGROUND)
 
@@ -428,41 +469,57 @@ def _draw(
         (panel_x, _MARGIN, _PANEL_WIDTH, _VIEW_SIZE),
     )
     content_x = panel_x + _MARGIN
+    content_width = _PANEL_WIDTH - 2 * _MARGIN
 
     screen.blit(heading_font.render("Status", True, _TEXT), (content_x, 35))
 
-    reward = font.render(f"Reward: {cumulative_reward:,.2f}", True, _TEXT)
-    screen.blit(reward, (content_x, 70))
-
-    _draw_bar(
+    _draw_history(
+        screen,
+        font,
+        "Reward",
+        reward_history,
+        f"{reward_history[-1]:,.2f}",
+        _REWARD_COLOR,
+        content_x,
+        65,
+        content_width,
+        52,
+    )
+    _draw_history(
         screen,
         font,
         "Satiety",
-        game.satiety_level,
+        satiety_history,
+        f"{satiety_history[-1]:+.1f}",
         _SATIETY_COLOR,
         content_x,
-        110,
+        120,
+        content_width,
+        52,
     )
-    _draw_bar(
+    _draw_history(
         screen,
         font,
         "Hydration",
-        game.hydration_level,
+        hydration_history,
+        f"{hydration_history[-1]:+.1f}",
         _HYDRATION_COLOR,
         content_x,
-        170,
+        175,
+        content_width,
+        52,
     )
 
-    inventory_y = 235
-    inventory_color = _SATIETY_COLOR if game.inventory_count else _BAR_BACKGROUND
+    inventory_y = 242
+    inventory_color = _SATIETY_COLOR if game.inventory_count else _INACTIVE_COLOR
     pygame.draw.circle(screen, inventory_color, (content_x + 8, inventory_y + 9), 8)
     inventory = "Bean carried" if game.inventory_count else "Inventory empty"
     screen.blit(font.render(inventory, True, _TEXT), (content_x + 25, inventory_y))
 
-    screen.blit(heading_font.render("Actions", True, _TEXT), (content_x, 280))
+    screen.blit(heading_font.render("Actions", True, _TEXT), (content_x, 277))
 
     for row, (key, action) in enumerate(_ACTION_LABELS):
-        y = 318 + row * 18
+        y = 311 + row * 18
         screen.blit(font.render(key, True, _TEXT), (content_x, y))
         screen.blit(font.render(action, True, _MUTED_TEXT), (content_x + 105, y))
 
@@ -476,12 +533,23 @@ def _run(game: Game, seed: int) -> None:
 
     tick = 0
     cumulative_reward = 0.0
+    reward_history = deque([cumulative_reward], maxlen=_HISTORY_LENGTH)
+    satiety_history = deque([game.satiety_level], maxlen=_HISTORY_LENGTH)
+    hydration_history = deque([game.hydration_level], maxlen=_HISTORY_LENGTH)
 
     pygame.key.set_repeat(_FAST_MODE_DELAY_MS, _FAST_MODE_INTERVAL_MS)
 
     pygame.display.set_caption(f"10d-game — seed={seed}, tick={tick}")
 
-    _draw(screen, game, font, heading_font, cumulative_reward)
+    _draw(
+        screen,
+        game,
+        font,
+        heading_font,
+        reward_history,
+        satiety_history,
+        hydration_history,
+    )
 
     running = True
     while running:
@@ -498,9 +566,20 @@ def _run(game: Game, seed: int) -> None:
             and (not getattr(event, "repeat", False) or event.key in _REPEATABLE_KEYS)
         ):
             cumulative_reward += game.tick(_KEY_ACTIONS[event.key])
+            reward_history.append(cumulative_reward)
+            satiety_history.append(game.satiety_level)
+            hydration_history.append(game.hydration_level)
             tick += 1
             pygame.display.set_caption(f"10d-game — t={tick}, seed={seed}")
-            _draw(screen, game, font, heading_font, cumulative_reward)
+            _draw(
+                screen,
+                game,
+                font,
+                heading_font,
+                reward_history,
+                satiety_history,
+                hydration_history,
+            )
 
 
 def main(argv: Sequence[str] | None = None) -> None:
