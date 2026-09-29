@@ -1,7 +1,11 @@
 [project]
 name = "xdgame"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python bindings for the 10d_game WebAssembly module"
+authors = [
+    { name = "Nis Meinert", email = "nis@fractalbrain.ai" },
+]
+license = "MIT"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
@@ -18,6 +22,12 @@ gui = [
 [project.scripts]
 xdgame-play = "xdgame._play_cli:main"
 xdgame-render-map = "xdgame._map_cli:main"
+
+[project.urls]
+Homepage = "https://github.com/fractal-brain-ai/10d-game"
+Documentation = "https://fractal-brain-ai.github.io/10d-game/python/"
+Source = "https://github.com/fractal-brain-ai/10d-game"
+Issues = "https://github.com/fractal-brain-ai/10d-game/issues"
 
 [build-system]
 requires = ["uv_build>=0.11.14,<0.12.0"]

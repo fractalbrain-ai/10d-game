@@ -1,6 +1,7 @@
 # 10d-game Python bindings
 
 [![Python documentation](https://img.shields.io/badge/docs-Python-3776ab)](https://fractalbrain-ai.github.io/10d-game/python/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-6c757d)](../../LICENSE)
 
 The `xdgame` package provides Python bindings for the 10d-game engine. It loads
 the engine as a WebAssembly module through [Wasmtime](https://wasmtime.dev/) and
