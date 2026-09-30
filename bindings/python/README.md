@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-B08900)](../../LICENSE)
 
 The `xdgame` package provides Python bindings for the 10d-game engine. It loads
-the engine as a WebAssembly module through [Wasmtime](https://wasmtime.dev/) and
+the engine as a WebAssembly module through [Wasmtime] and
 exposes its configuration, game state, and generated images through a
 Python-friendly API. Fields of view and rendered maps are returned as NumPy
 arrays.
@@ -14,25 +14,49 @@ Python package can be used with different builds of the engine.
 
 ## Install from source
 
-The bindings require Python 3.14 or newer and
-use [uv](https://docs.astral.sh/uv/)
-for environment and dependency management.
+The bindings require Python 3.14 or newer. Before using them, you need a
+compiled `10d_game.wasm` module.
 
-First, build the WebAssembly module from the repository root:
+The easiest option is to download
+[`10d_game.wasm` from the latest tagged release][wasm download]. You can store
+the module anywhere: pass its path when creating an `xdgame.Game` or as the
+first positional argument to the command-line tools. For simplicity, the
+examples below use `build/10d_game.wasm` in the repository root, which is also
+where the `Makefile` places modules that it builds.
+
+If you would rather build the module yourself, run this from the repository
+root:
 
 ```bash
 make wasm
 ```
 
-This creates `build/10d_game.wasm`, which callers pass to the Python binding
-when loading the engine. Alternatively, download
-[`10d_game.wasm` from the latest tagged release](https://github.com/fractalbrain-ai/10d-game/releases/latest/download/10d_game.wasm).
-Then create a virtual environment and install the Python package:
+This requires a working Emscripten SDK; see the [top-level build instructions]
+for the initial setup. By default, the command creates
+`build/10d_game.wasm`.
+
+### Using uv
+
+From the repository root, install the package and its runtime dependencies
+with [uv]:
 
 ```bash
 cd bindings/python
-uv venv
-uv pip install .
+uv sync --locked
+```
+
+This creates a virtual environment under `bindings/python/.venv`. Use
+`uv run` for commands that should run inside it.
+
+### Using pip
+
+If [uv] is not your thing, good old pip works as well:
+
+```bash
+cd bindings/python
+python3.14 -m venv .venv
+source .venv/bin/activate
+python -m pip install .
 ```
 
 ## Quick example
@@ -64,8 +88,22 @@ print(f"field of view: {fov.shape}")
 print(f"          map: {map_image.shape}")
 ```
 
-Run the example from the repository root so that the relative path to the
-WebAssembly module resolves correctly. It prints:
+Save the example as `example.py` in the repository root so that the relative
+path to the WebAssembly module resolves correctly. Run it through the [uv]
+environment with:
+
+```bash
+uv run --project bindings/python python example.py
+```
+
+When using the activated pip environment, run it directly:
+
+```bash
+cd ../..
+python example.py
+```
+
+It prints:
 
 ```text
        reward: 1.0
@@ -75,8 +113,7 @@ field of view: (25, 25, 3)
 
 For agent-training loops, the package also provides `XDGameEnv`, a Gym-style
 interface with the canonical `reset()`, `step()`, and `close()` methods. See the
-[Python documentation](https://fractal-brain-ai.github.io/10d-game/python/) for
-details.
+[Python documentation] for details.
 
 ## Render a map from the command line
 
@@ -98,6 +135,8 @@ uv run xdgame-render-map \
     --width 512 \
     --height 512
 ```
+
+When using an activated pip environment, simply leave off the `uv run` prefix.
 
 The map is centered at world position `(0, 0)` and rendered at time zero by
 default. The PNG records the seed, center coordinates, dimensions, and time in
@@ -127,20 +166,26 @@ Run `uv run xdgame-render-map --help` for the complete command-line reference.
 ## Control an agent
 
 The optional graphical interface lets a human control an agent one action at a
-time. Install its dependency from `bindings/python`:
-
-```bash
-uv pip install ".[gui]"
-```
-
-The WebAssembly module and world seed are required at startup. Without a
-configuration file, the game-engine defaults are used:
+time. With uv, request the optional GUI dependency when launching it:
 
 ```bash
 uv run --extra gui xdgame-play \
     ../../build/10d_game.wasm \
     --seed 42
 ```
+
+If you installed the package with pip, install the GUI dependency once and
+then invoke the executable directly:
+
+```bash
+python -m pip install ".[gui]"
+xdgame-play \
+    ../../build/10d_game.wasm \
+    --seed 42
+```
+
+The WebAssembly module and world seed are required at startup. Without a
+configuration file, the game-engine defaults are used.
 
 Use `--config game-engine-config.toml` to overwrite the defaults with values
 from a TOML file. All startup options are command-line arguments; the interface
@@ -149,8 +194,8 @@ does not provide in-game loading.
 The window displays the field of view, satiety and hydration levels, inventory
 state, cumulative reward, and all available actions. Use `W`, `A`, `S`, and `D`
 or the arrow keys to move, `E` to eat, `F` to pick up a bean, `R` to drop it,
-and Space to wait. Hold a movement key or Space for 500 ms to repeat that action
-at 10 Hz. Press `Q` or Escape to quit.
+and `Space` to wait. Hold a movement key or `Space` for 500 ms to repeat that
+action at 10 Hz. Press `Q` or `Escape` to quit.
 
 ## Development
 
@@ -202,3 +247,9 @@ uv run --group docs sphinx-build -W -b html docs docs/_build/html
 ```
 
 The generated documentation starts at `docs/_build/html/index.html`.
+
+[Python documentation]: https://fractal-brain-ai.github.io/10d-game/python/
+[top-level build instructions]: ../../README.md#set-up-emscripten
+[uv]: https://docs.astral.sh/uv/
+[wasm download]: https://github.com/fractalbrain-ai/10d-game/releases/latest/download/10d_game.wasm
+[Wasmtime]: https://wasmtime.dev/
