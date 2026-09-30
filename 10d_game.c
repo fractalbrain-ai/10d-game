@@ -20,6 +20,10 @@
 #define MIN_SUN_SPATIAL_PERIOD 1.0F
 #define WORLD_SEED_SALT 0x8f3f73b5U
 
+static_assert(FOV_SIZE % 2 == 1);
+static_assert(PATCH_DATA_SIZE == 3U * ((PATCH_SIZE * PATCH_SIZE + 7U) / 8U));
+static_assert(PATCH_DATA_SIZE <= PATCH_STORAGE_SIZE);
+
 typedef enum bean_flavor
 {
     NO_BEAN = 0,
@@ -224,6 +228,7 @@ get_flavor(const patch_t *patch, uint32_t x, uint32_t y)
     uint32_t group_idx = pixel_idx / 8U;
     uint32_t shift = (pixel_idx % 8U) * 3U;
     uint32_t byte_idx = group_idx * 3U;
+    assert(byte_idx + 2U < PATCH_DATA_SIZE);
 
     uint32_t packed = load_u24(&patch->pixel[byte_idx]);
 
@@ -246,6 +251,7 @@ set_flavor(patch_t *patch, uint32_t x, uint32_t y, bean_flavor_t flavor)
     uint32_t group_idx = pixel_idx / 8U;
     uint32_t shift = (pixel_idx % 8U) * 3U;
     uint32_t byte_idx = group_idx * 3U;
+    assert(byte_idx + 2U < PATCH_DATA_SIZE);
 
     uint32_t packed = load_u24(&patch->pixel[byte_idx]);
 
@@ -360,6 +366,11 @@ static void fill_sun_channel(uint8_t *blue,
 {
     assert(flavor >= 1 && flavor <= 4);
     assert(biome_size > 0 && biome_size <= INT32_MAX);
+    assert(colors.colors != NULL);
+    assert(colors.n_colors > 0);
+    assert(colors.n_colors % 4U == 0);
+    assert(colors.stride < colors.n_colors);
+    assert(colors.offset < colors.n_colors);
 
     int32_t divisor = (int32_t)biome_size;
     int32_t offset = divisor / 2;
@@ -475,6 +486,8 @@ static void fill_fov(fov_t *fov,
 [[nodiscard]] static uint32_t
 find_hash_slot(const uint32_t *hashes, uint32_t size, uint32_t hash)
 {
+    assert(hashes != NULL || size == 0);
+
     uint32_t first = 0;
     uint32_t count = size;
 
@@ -503,6 +516,8 @@ add_patch(patch_lookup_t *lookup, patch_t patch, uint32_t idx)
     assert(lookup != NULL);
     assert(patch.pixel != NULL);
     assert(lookup->size <= lookup->capacity);
+    assert(lookup->capacity == 0
+           || (lookup->hashes != NULL && lookup->patches != NULL));
     assert(idx <= lookup->size);
     assert(idx == 0 || lookup->hashes[idx - 1U] < patch.hash);
     assert(idx == lookup->size || patch.hash < lookup->hashes[idx]);
@@ -626,6 +641,11 @@ add_patch(patch_lookup_t *lookup, patch_t patch, uint32_t idx)
 [[nodiscard]] static patch_t *find_patch(patch_lookup_t *lookup,
                                          pos_t world_pos)
 {
+    assert(lookup != NULL);
+    assert(lookup->size <= lookup->capacity);
+    assert(lookup->capacity == 0
+           || (lookup->hashes != NULL && lookup->patches != NULL));
+
     int32_t patch_x = floor_div(world_pos.x, PATCH_SIZE);
     int32_t patch_y = floor_div(world_pos.y, PATCH_SIZE);
 
@@ -683,6 +703,8 @@ add_patch(patch_lookup_t *lookup, patch_t patch, uint32_t idx)
                                                   patch_lookup_t *map_patches,
                                                   pos_t world_pos)
 {
+    assert(game != NULL);
+
     const patch_t *patch = find_patch(&game->patch_lookup, world_pos);
     if (patch != NULL)
     {
@@ -703,6 +725,9 @@ add_patch(patch_lookup_t *lookup, patch_t patch, uint32_t idx)
 static void free_patch_lookup(patch_lookup_t *lookup)
 {
     assert(lookup != NULL);
+    assert(lookup->size <= lookup->capacity);
+    assert(lookup->capacity == 0
+           || (lookup->hashes != NULL && lookup->patches != NULL));
 
     for (uint32_t i = 0; i < lookup->size; i++)
     {
@@ -1137,31 +1162,38 @@ void xdgame_free_map(xdgame_map_t *map)
 
 const uint8_t *xdgame_get_map_r(const xdgame_map_t *map)
 {
+    assert(map != NULL);
     return map->r;
 }
 
 const uint8_t *xdgame_get_map_g(const xdgame_map_t *map)
 {
+    assert(map != NULL);
     return map->g;
 }
 
 const uint8_t *xdgame_get_map_b(const xdgame_map_t *map)
 {
+    assert(map != NULL);
     return map->b;
 }
 
 uint32_t xdgame_get_map_width(const xdgame_map_t *map)
 {
+    assert(map != NULL);
     return map->width;
 }
 
 uint32_t xdgame_get_map_height(const xdgame_map_t *map)
 {
+    assert(map != NULL);
     return map->height;
 }
 
 int xdgame_set_agent(xdgame_state_t *game, int32_t x, int32_t y)
 {
+    assert(game != NULL);
+
     if (!set_agent_position(game, x, y))
     {
         return 0;
@@ -1190,6 +1222,7 @@ int xdgame_set_agent(xdgame_state_t *game, int32_t x, int32_t y)
     assert(local_x < PATCH_SIZE);
     assert(local_y < PATCH_SIZE);
     assert((uint32_t)flavor <= 4);
+    assert(get_flavor(patch, local_x, local_y) == flavor);
 
     if (flavor == SALTY_BEAN && game->cfg.salty_bean_delay > 0)
     {
@@ -1250,6 +1283,7 @@ int xdgame_set_agent(xdgame_state_t *game, int32_t x, int32_t y)
 float xdgame_tick(xdgame_state_t *game, xdgame_action_t action)
 {
     assert(game != NULL);
+    assert(game->pending_pangs == 0 || game->pang_ticks != NULL);
 
     game->last_eaten_flavor = NO_BEAN;
 
@@ -1360,21 +1394,26 @@ float xdgame_tick(xdgame_state_t *game, xdgame_action_t action)
 
 float xdgame_get_satiety_level(const xdgame_state_t *game)
 {
+    assert(game != NULL);
     return game->satiety;
 }
 
 float xdgame_get_hydration_level(const xdgame_state_t *game)
 {
+    assert(game != NULL);
     return game->hydration;
 }
 
 uint32_t xdgame_get_inventory_count(const xdgame_state_t *game)
 {
+    assert(game != NULL);
     return (uint32_t)(game->inventory != NO_BEAN);
 }
 
 uint32_t xdgame_reveal_last_eaten_flavor(const xdgame_state_t *game)
 {
+    assert(game != NULL);
+
     switch (game->last_eaten_flavor)
     {
     case NO_BEAN:
@@ -1394,16 +1433,19 @@ uint32_t xdgame_reveal_last_eaten_flavor(const xdgame_state_t *game)
 
 const uint8_t *xdgame_get_fov_r(const xdgame_state_t *game)
 {
+    assert(game != NULL);
     return game->fov.r;
 }
 
 const uint8_t *xdgame_get_fov_g(const xdgame_state_t *game)
 {
+    assert(game != NULL);
     return game->fov.g;
 }
 
 const uint8_t *xdgame_get_fov_b(const xdgame_state_t *game)
 {
+    assert(game != NULL);
     return game->fov.b;
 }
 
