@@ -1,0 +1,16 @@
+bean_variants = "four"
+bean_density = 0.009999999776482582
+bean_biome_size = 1000
+
+needs_decay = 0.10000000149011612
+
+satiety_bean_satiety_gain = 3.0
+hydration_bean_hydration_gain = 10.0
+salty_bean_satiety_gain = 10.0
+salty_bean_hydration_loss = 10.0
+salty_bean_delay = 10
+bitter_bean_penalty = 10.0
+
+sun_spatial_period = 200.0
+sun_cycle_duration = 400
+sun_reward = 1.0

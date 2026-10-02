@@ -5,7 +5,11 @@ description = "Python bindings for the 10d_game WebAssembly module"
 authors = [
     { name = "Nis Meinert", email = "nis@fractalbrain.ai" },
 ]
+maintainers = [
+    { name = "Fractal Brain Ltd" },
+]
 license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
@@ -25,6 +29,7 @@ xdgame-render-map = "xdgame._map_cli:main"
 
 [project.urls]
 Homepage = "https://github.com/fractal-brain-ai/10d-game"
+Company = "https://fractalbrain.ai/"
 Documentation = "https://fractal-brain-ai.github.io/10d-game/python/"
 Source = "https://github.com/fractal-brain-ai/10d-game"
 Issues = "https://github.com/fractal-brain-ai/10d-game/issues"
