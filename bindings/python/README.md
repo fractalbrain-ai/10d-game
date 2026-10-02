@@ -248,7 +248,7 @@ uv run --group docs sphinx-build -W -b html docs docs/_build/html
 
 The generated documentation starts at `docs/_build/html/index.html`.
 
-[Python documentation]: https://fractal-brain-ai.github.io/10d-game/python/
+[Python documentation]: https://fractalbrain-ai.github.io/10d-game/python/
 [top-level build instructions]: ../../README.md#set-up-emscripten
 [uv]: https://docs.astral.sh/uv/
 [wasm download]: https://github.com/fractalbrain-ai/10d-game/releases/latest/download/10d_game.wasm

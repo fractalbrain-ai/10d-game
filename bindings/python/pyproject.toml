@@ -28,11 +28,11 @@ xdgame-play = "xdgame._play_cli:main"
 xdgame-render-map = "xdgame._map_cli:main"
 
 [project.urls]
-Homepage = "https://github.com/fractal-brain-ai/10d-game"
+Homepage = "https://github.com/fractalbrain-ai/10d-game"
 Company = "https://fractalbrain.ai/"
-Documentation = "https://fractal-brain-ai.github.io/10d-game/python/"
-Source = "https://github.com/fractal-brain-ai/10d-game"
-Issues = "https://github.com/fractal-brain-ai/10d-game/issues"
+Documentation = "https://fractalbrain-ai.github.io/10d-game/python/"
+Source = "https://github.com/fractalbrain-ai/10d-game"
+Issues = "https://github.com/fractalbrain-ai/10d-game/issues"
 
 [build-system]
 requires = ["uv_build>=0.11.14,<0.12.0"]
