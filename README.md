@@ -1,9 +1,9 @@
 # 10d-game
 
-[![Play in browser](https://img.shields.io/badge/play-in%20browser-2B7A78)](https://fractalbrain-ai.github.io/10d-game/)
-[![C API documentation](https://img.shields.io/badge/docs-C%20API-5C677D)](https://fractalbrain-ai.github.io/10d-game/c-api/)
-[![Python documentation](https://img.shields.io/badge/docs-Python-3776AB)](https://fractalbrain-ai.github.io/10d-game/python/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-B08900)](LICENSE)
+[![Play in browser][browser-badge]][browser-game]
+[![C API documentation][c-api-badge]][c-api-docs]
+[![Python documentation][python-docs-badge]][python-docs]
+[![License: MIT][license-badge]][license]
 
 10d-game is a small C game engine intended for AI-agent experiments. An agent
 observes a square field of view and chooses one action per tick from a compact
@@ -12,7 +12,7 @@ affect satiety, hydration, or reward. Given the same seed, configuration, and
 actions, the engine produces the same world and game evolution.
 
 The game is the playable companion to
-[📄 *Continual Reinforcement Learning Is an Integration Problem*](https://github.com/fractalbrain-ai/10d-paper),
+[📄 *Continual Reinforcement Learning Is an Integration Problem*][paper],
 a paper that presents ten desiderata for continual reinforcement learning and
 outlines a benchmark based on the game's rules.
 
@@ -32,56 +32,55 @@ $CC your_program.c 10d_game.o -lm
 ```
 
 Alternatively, each tagged release provides a compiled
-[`10d_game.wasm` module](https://github.com/fractalbrain-ai/10d-game/releases/latest/download/10d_game.wasm).
-The [Python binding](bindings/python) loads this module through Wasmtime rather
+[`10d_game.wasm` module][wasm-download].
+The [Python binding][python-binding] loads this module through Wasmtime rather
 than compiling a platform-specific extension, which keeps the binding highly
 portable across platforms supported by its runtime.
 
 The same WASM module is also bundled with the browser interface into a single,
 self-contained HTML file. You can
-[play 10d-game directly in your browser](https://fractalbrain-ai.github.io/10d-game/)
+[play 10d-game directly in your browser][browser-game]
 without installing anything or running a server.
 
 ## Engine files
 
-- [`10d_game.h`](10d_game.h) defines the public C API. It contains the game
+- [`10d_game.h`][c-api-header] defines the public C API. It contains the game
   configuration, available actions, lifecycle functions, state getters, field
   of view accessors, and map-generation interface. Its API documentation also
   explains the bean effects, sunlight parameters, and image-channel layout.
 
-- [`10d_game.c`](10d_game.c) implements the engine. It contains deterministic
+- [`10d_game.c`][engine-source] implements the engine. It contains deterministic
   world and patch generation, bean placement and coloring, sunlight rendering,
   agent actions, resource levels, rewards, and field of view generation.
 
 ## Bindings and interfaces
 
-- [`bindings/browser/10d_game.html`](bindings/browser/10d_game.html) is the
+- [`bindings/browser/10d_game.html`][browser-source] is the
   source template for the browser interface. The build embeds the compiled
   WebAssembly module together with all JavaScript and CSS into one HTML file.
   The result can be opened directly from disk without a web server. It provides
   a simple human interface for observing the field of view and controlling the
   agent. The latest tagged release is also available as a
-  [hosted browser game](https://fractalbrain-ai.github.io/10d-game/).
+  [hosted browser game][browser-game].
 
-- [`bindings/python`](bindings/python) contains the Python binding. It loads the
+- [`bindings/python`][python-binding] contains the Python binding. It loads the
   WebAssembly module through Wasmtime, exposes a Python API, returns images as
   NumPy arrays, and provides command-line tools for rendering maps and
   controlling an agent. Installation, usage, testing, and documentation
   instructions are in the dedicated
-  [Python binding README](bindings/python/README.md).
+  [Python binding README][python-readme].
 
 ## Development
 
 ### Set up Emscripten
 
-The project uses the [Emscripten SDK
-(emsdk)](https://emscripten.org/docs/tools_reference/emsdk.html) to compile the
-C engine to WebAssembly. The Makefile expects it at the repository-relative
-path `3rd-party/emsdk/upstream/emscripten/emcc`. Run all commands in this
-section from the repository root so that this path resolves correctly.
+The project uses the [Emscripten SDK (emsdk)][emsdk-docs] to compile the C
+engine to WebAssembly. The Makefile expects it at the repository-relative path
+`3rd-party/emsdk/upstream/emscripten/emcc`. Run all commands in this section
+from the repository root so that this path resolves correctly.
 
-First, initialize the official [emsdk Git
-repository](https://github.com/emscripten-core/emsdk) included as a submodule:
+First, initialize the official [emsdk Git repository][emsdk-repository]
+included as a submodule:
 
 ```bash
 git submodule update --init --recursive
@@ -145,3 +144,21 @@ Remove generated build artifacts with:
 ```bash
 make clean
 ```
+
+[browser-badge]: https://img.shields.io/badge/play-in%20browser-2B7A78
+[browser-game]: https://fractalbrain-ai.github.io/10d-game/
+[browser-source]: bindings/browser/10d_game.html
+[c-api-badge]: https://img.shields.io/badge/docs-C%20API-5C677D
+[c-api-docs]: https://fractalbrain-ai.github.io/10d-game/c-api/
+[c-api-header]: 10d_game.h
+[emsdk-docs]: https://emscripten.org/docs/tools_reference/emsdk.html
+[emsdk-repository]: https://github.com/emscripten-core/emsdk
+[engine-source]: 10d_game.c
+[license]: LICENSE
+[license-badge]: https://img.shields.io/badge/license-MIT-B08900
+[paper]: https://github.com/fractalbrain-ai/10d-paper
+[python-binding]: bindings/python
+[python-docs]: https://fractalbrain-ai.github.io/10d-game/python/
+[python-docs-badge]: https://img.shields.io/badge/docs-Python-3776AB
+[python-readme]: bindings/python/README.md
+[wasm-download]: https://github.com/fractalbrain-ai/10d-game/releases/latest/download/10d_game.wasm
