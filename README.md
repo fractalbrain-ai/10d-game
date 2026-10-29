@@ -11,6 +11,11 @@ action space. The procedurally generated world contains four bean flavors that
 affect satiety, hydration, or reward. Given the same seed, configuration, and
 actions, the engine produces the same world and game evolution.
 
+The game is the playable companion to
+[📄 *Continual Reinforcement Learning Is an Integration Problem*](https://github.com/fractalbrain-ai/10d-paper),
+a paper that presents ten desiderata for continual reinforcement learning and
+outlines a benchmark based on the game's rules.
+
 The engine is deliberately independent of a particular user interface. It can
 be embedded directly through its C API, loaded as WebAssembly, controlled from
 Python, or explored through the self-contained browser interface.
