@@ -1,0 +1,10 @@
+*.swp
+*.swo
+__pycache__/
+.ruff_cache/
+
+config.json
+checkpoint.json
+logs/
+key.txt
+progress.txt
