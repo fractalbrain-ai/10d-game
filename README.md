@@ -70,6 +70,12 @@ without installing anything or running a server.
   instructions are in the dedicated
   [Python binding README][python-readme].
 
+- [`llm-agent`][llm-agent] contains a headless language-model agent for
+  studying how game mechanics are inferred through interaction. It runs the
+  game on the host and the agent's tools in a container. Setup, model
+  configuration, and conversation logging are described in the dedicated
+  [LLM agent README][llm-agent-readme].
+
 ## Development
 
 ### Set up Emscripten
@@ -156,6 +162,8 @@ make clean
 [engine-source]: 10d_game.c
 [license]: LICENSE
 [license-badge]: https://img.shields.io/badge/license-MIT-B08900
+[llm-agent]: llm-agent
+[llm-agent-readme]: llm-agent/README.md
 [paper]: https://github.com/fractalbrain-ai/10d-paper
 [python-binding]: bindings/python
 [python-docs]: https://fractalbrain-ai.github.io/10d-game/python/
