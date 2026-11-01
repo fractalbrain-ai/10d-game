@@ -51,7 +51,7 @@ jobs:
 
             - name: Build C API documentation
               run: |
-                  make -C docs html
+                  make docs
                   cp -R docs/build/html build/pages/c-api
 
             - name: Build Python documentation

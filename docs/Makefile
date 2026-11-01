@@ -1,4 +1,5 @@
 DOXYGEN ?= doxygen
+export XDGAME_VERSION
 
 .PHONY: html clean
 

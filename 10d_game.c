@@ -866,6 +866,21 @@ static int set_agent_position(xdgame_state_t *game, int32_t x, int32_t y)
     return 1;
 }
 
+uint32_t xdgame_version_major(void)
+{
+    return XDGAME_VERSION_MAJOR;
+}
+
+uint32_t xdgame_version_minor(void)
+{
+    return XDGAME_VERSION_MINOR;
+}
+
+uint32_t xdgame_version_patch(void)
+{
+    return XDGAME_VERSION_PATCH;
+}
+
 xdgame_config_t *xdgame_default_config(void)
 {
     xdgame_config_t *cfg = malloc(sizeof(*cfg));

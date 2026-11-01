@@ -44,10 +44,11 @@ without installing anything or running a server.
 
 ## Engine files
 
-- [`10d_game.h`][c-api-header] defines the public C API. It contains the game
-  configuration, available actions, lifecycle functions, state getters, field
-  of view accessors, and map-generation interface. Its API documentation also
-  explains the bean effects, sunlight parameters, and image-channel layout.
+- [`10d_game.h`][c-api-header] defines the [public C API][c-api-docs]. It
+  contains the game configuration, available actions, lifecycle functions,
+  state getters, field of view accessors, and map-generation interface. The API
+  documentation also explains the bean effects, sunlight parameters, and
+  image-channel layout.
 
 - [`10d_game.c`][engine-source] implements the engine. It contains deterministic
   world and patch generation, bean placement and coloring, sunlight rendering,
@@ -125,6 +126,19 @@ browser. A seed can also be supplied through the URL, for example:
 file:///path/to/10d_game/build/10d_game.html?seed=1234
 ```
 
+### Build the C API documentation
+
+Building the C API documentation requires [Doxygen][doxygen] and a native C
+compiler:
+
+```bash
+make docs
+```
+
+This compiles a small native helper to obtain the engine version and writes the
+documentation to `docs/build/html`. Open `docs/build/html/index.html` to view
+it.
+
 ### Check and format the C sources
 
 The C checks require `clang-format` and `clang-tidy`:
@@ -151,6 +165,7 @@ make clean
 [c-api-badge]: https://img.shields.io/badge/docs-C%20API-5C677D
 [c-api-docs]: https://fractalbrain-ai.github.io/10d-game/c-api/
 [c-api-header]: 10d_game.h
+[doxygen]: https://www.doxygen.nl/
 [emsdk-docs]: https://emscripten.org/docs/tools_reference/emsdk.html
 [emsdk-repository]: https://github.com/emscripten-core/emsdk
 [engine-source]: 10d_game.c

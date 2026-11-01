@@ -18,6 +18,16 @@ jobs:
               with:
                   submodules: recursive
 
+            - name: Verify release version
+              run: |
+                  make build/xdgame-version
+                  implementation_tag="v$(./build/xdgame-version)"
+
+                  if [ "$GITHUB_REF_NAME" != "$implementation_tag" ]; then
+                      echo "::error::Tag $GITHUB_REF_NAME does not match $implementation_tag"
+                      exit 1
+                  fi
+
             - name: Install Emscripten
               run: |
                   ./3rd-party/emsdk/emsdk install latest

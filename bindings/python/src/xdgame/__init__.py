@@ -9,7 +9,9 @@ The Python package is a wrapper around the compiled 10d_game engine. The engine
 itself lives in a WebAssembly (WASM) file and implements world generation, game
 state, actions, rewards, fields of view, and map snapshots. The package does not
 bundle that file: callers select the engine binary they want to run and pass
-its path or in-memory contents to :class:`Game`.
+its path or in-memory contents to :class:`Game`. The package and engine module
+must have the same version; loading a different version raises
+:class:`XDGameError`.
 
 The public API centers on three objects:
 
@@ -115,6 +117,7 @@ provides a convenient starting point for editing:
 from ._config import BeanVariants, Config
 from ._gym import XDGameEnv
 from ._runtime import Action, Game, XDGameError, config_from_toml, default_config
+from ._version import __version__
 
 __all__ = [
     "Action",
@@ -123,6 +126,7 @@ __all__ = [
     "Game",
     "XDGameEnv",
     "XDGameError",
+    "__version__",
     "config_from_toml",
     "default_config",
 ]

@@ -3,6 +3,15 @@
 
 #include <stdint.h>
 
+/** Major component of the engine version. */
+#define XDGAME_VERSION_MAJOR 0U
+
+/** Minor component of the engine version. */
+#define XDGAME_VERSION_MINOR 3U
+
+/** Patch component of the engine version. */
+#define XDGAME_VERSION_PATCH 0U
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -247,6 +256,30 @@ typedef enum xdgame_action
     XDGAME_PICKUP_BEAN, /**< Pick up the bean under the agent. */
     XDGAME_DROP_BEAN,   /**< Drop the carried bean under the agent. */
 } xdgame_action_t;
+
+/**
+ * \brief Returns the major version of the engine.
+ *
+ * \return ::XDGAME_VERSION_MAJOR.
+ */
+[[nodiscard]]
+uint32_t xdgame_version_major(void);
+
+/**
+ * \brief Returns the minor version of the engine.
+ *
+ * \return ::XDGAME_VERSION_MINOR.
+ */
+[[nodiscard]]
+uint32_t xdgame_version_minor(void);
+
+/**
+ * \brief Returns the patch version of the engine.
+ *
+ * \return ::XDGAME_VERSION_PATCH.
+ */
+[[nodiscard]]
+uint32_t xdgame_version_patch(void);
 
 /**
  * \brief Allocates a configuration initialized with default values.

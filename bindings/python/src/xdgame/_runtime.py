@@ -8,6 +8,7 @@ from numpy.typing import NDArray
 from wasmtime import Engine, Func, Instance, Memory, Module, Store
 
 from ._config import CONFIG_SIZE, Config
+from ._version import __version__ as _PACKAGE_VERSION
 
 _U32_MAX = (1 << 32) - 1
 _I32_MIN = -(1 << 31)
@@ -61,6 +62,9 @@ class Action(IntEnum):
 
 _FUNCTION_EXPORTS = (
     "_initialize",
+    "xdgame_version_major",
+    "xdgame_version_minor",
+    "xdgame_version_patch",
     "xdgame_default_config",
     "xdgame_free_config",
     "xdgame_new_game",
@@ -141,13 +145,37 @@ class _Runtime:
 
         self._functions: dict[str, Func] = {}
         for name in _FUNCTION_EXPORTS:
-            function = exports[name]
+            try:
+                function = exports[name]
+            except KeyError as error:
+                self.close()
+                raise XDGameError(
+                    f"module does not export required function {name!r}"
+                ) from error
+
             if not isinstance(function, Func):
+                self.close()
                 raise XDGameError(f"module export {name!r} is not a function")
 
             self._functions[name] = function
 
         self.call("_initialize")
+
+        module_version = ".".join(
+            str(int(self.call(name)))
+            for name in (
+                "xdgame_version_major",
+                "xdgame_version_minor",
+                "xdgame_version_patch",
+            )
+        )
+        if module_version != _PACKAGE_VERSION:
+            self.close()
+            raise XDGameError(
+                "incompatible 10d_game version: "
+                f"Python package is {_PACKAGE_VERSION}, "
+                f"but the WebAssembly module is {module_version}"
+            )
 
     @property
     def is_open(self) -> bool:
@@ -231,6 +259,7 @@ def default_config(
     :raises TypeError: If ``wasm`` or an override has an invalid type.
     :raises ValueError: If an override value is outside its valid range.
     :raises MemoryError: If the module cannot allocate the configuration.
+    :raises XDGameError: If the module version is incompatible.
     """
     with _Runtime(wasm) as runtime:
         return runtime.default_config(**overrides)
@@ -257,6 +286,7 @@ def config_from_toml(
     :raises ValueError: If the TOML is malformed, contains an unknown field, or
         contains a value outside its valid range.
     :raises MemoryError: If the module cannot allocate its defaults.
+    :raises XDGameError: If the module version is incompatible.
     """
     config = default_config(wasm)._with_toml(path)
     return config._with_overrides(overrides)
@@ -268,6 +298,8 @@ class Game:
     ``wasm`` may be a filesystem path or in-memory WebAssembly bytes. Immutable
     :class:`bytes` are preferred for in-memory modules; :class:`bytearray` is
     accepted for convenience and copied during construction.
+
+    The module version must match the installed Python package version.
 
     If ``config`` is omitted, the defaults from the supplied engine are used.
     The engine copies a supplied configuration during construction, so that

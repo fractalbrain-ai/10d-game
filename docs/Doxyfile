@@ -1,4 +1,5 @@
 PROJECT_NAME           = "10d_game"
+PROJECT_NUMBER         = $(XDGAME_VERSION)
 PROJECT_BRIEF          = "C API documentation for 10d_game"
 OUTPUT_DIRECTORY       = build
 
