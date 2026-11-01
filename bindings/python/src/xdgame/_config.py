@@ -27,10 +27,12 @@ class BeanVariants(IntEnum):
     NINE_BEAN_VARIANTS = 2
 
 
-_CONFIG_STRUCT = Struct("<ifIfffffIffIf")
+_CONFIG_STRUCT = Struct("<ifIfffffffIffIf")
 _FLOAT_FIELDS = frozenset(
     {
         "bean_density",
+        "initial_satiety",
+        "initial_hydration",
         "needs_decay",
         "satiety_bean_satiety_gain",
         "hydration_bean_hydration_gain",
@@ -78,6 +80,10 @@ class Config:
         contains a bean. Each flavor is equally likely after a bean is placed.
     :ivar bean_biome_size: Side length of each square bean-color biome in world
         cells. The value must be in ``[1, 2147483647]``.
+    :ivar initial_satiety: Satiety level at the start of a game. The value must
+        be between ``-100`` and ``100``.
+    :ivar initial_hydration: Hydration level at the start of a game. The value
+        must be between ``-100`` and ``100``.
     :ivar needs_decay: Value subtracted from satiety and hydration every tick,
         in level points. Positive values decrease both levels; negative values
         increase them.
@@ -111,6 +117,8 @@ class Config:
     bean_density: float
     bean_biome_size: int
 
+    initial_satiety: float
+    initial_hydration: float
     needs_decay: float
 
     satiety_bean_satiety_gain: float
@@ -186,6 +194,12 @@ class Config:
         if not 1 <= config.bean_biome_size <= _INT32_MAX:
             raise ValueError("bean_biome_size must be between 1 and 2147483647")
 
+        if not -100.0 <= config.initial_satiety <= 100.0:
+            raise ValueError("initial_satiety must be between -100 and 100")
+
+        if not -100.0 <= config.initial_hydration <= 100.0:
+            raise ValueError("initial_hydration must be between -100 and 100")
+
         if not 0 <= config.salty_bean_delay <= _UINT32_MAX:
             raise ValueError("salty_bean_delay must fit in uint32_t")
 
@@ -216,6 +230,8 @@ class Config:
             f"bean_density = {self.bean_density!r}\n"
             f"bean_biome_size = {self.bean_biome_size}\n"
             "\n"
+            f"initial_satiety = {self.initial_satiety!r}\n"
+            f"initial_hydration = {self.initial_hydration!r}\n"
             f"needs_decay = {self.needs_decay!r}\n"
             "\n"
             f"satiety_bean_satiety_gain = {self.satiety_bean_satiety_gain!r}\n"
@@ -237,6 +253,8 @@ class Config:
             int(self.bean_variants),
             self.bean_density,
             self.bean_biome_size,
+            self.initial_satiety,
+            self.initial_hydration,
             self.needs_decay,
             self.satiety_bean_satiety_gain,
             self.hydration_bean_hydration_gain,
@@ -255,6 +273,8 @@ class Config:
             bean_variants,
             bean_density,
             bean_biome_size,
+            initial_satiety,
+            initial_hydration,
             needs_decay,
             satiety_bean_satiety_gain,
             hydration_bean_hydration_gain,
@@ -271,6 +291,8 @@ class Config:
             bean_variants=BeanVariants(bean_variants),
             bean_density=bean_density,
             bean_biome_size=bean_biome_size,
+            initial_satiety=initial_satiety,
+            initial_hydration=initial_hydration,
             needs_decay=needs_decay,
             satiety_bean_satiety_gain=satiety_bean_satiety_gain,
             hydration_bean_hydration_gain=hydration_bean_hydration_gain,

@@ -390,9 +390,9 @@ class Game:
     def satiety_level(self) -> float:
         """Current satiety level.
 
-        The level starts at 100, changes each tick according to the
-        :class:`xdgame.Config` value ``needs_decay``, is affected by beans, and
-        remains between -100 and 100.
+        The level starts at the :class:`xdgame.Config` value
+        ``initial_satiety``, changes each tick according to ``needs_decay``, is
+        affected by beans, and remains between -100 and 100.
 
         :raises XDGameError: If the game is closed.
         """
@@ -404,9 +404,9 @@ class Game:
     def hydration_level(self) -> float:
         """Current hydration level.
 
-        The level starts at 100, changes each tick according to the
-        :class:`xdgame.Config` value ``needs_decay``, is affected by beans, and
-        remains between -100 and 100.
+        The level starts at the :class:`xdgame.Config` value
+        ``initial_hydration``, changes each tick according to ``needs_decay``,
+        is affected by beans, and remains between -100 and 100.
 
         :raises XDGameError: If the game is closed.
         """

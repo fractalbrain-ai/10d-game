@@ -47,13 +47,20 @@ def game_seed() -> int:
 )
 def test_game_loads_from_supported_source_types(
     wasm_path: Path,
-    xdgame_default_config: xdgame.Config,
     game_seed: int,
     source_factory: Callable[[Path], str | Path | bytearray],
 ) -> None:
-    with xdgame.Game(
-        source_factory(wasm_path), game_seed, xdgame_default_config
-    ) as game:
+    initial_satiety = -20.0
+    initial_hydration = 40.0
+    config = xdgame.default_config(
+        wasm_path,
+        initial_satiety=initial_satiety,
+        initial_hydration=initial_hydration,
+    )
+    with xdgame.Game(source_factory(wasm_path), game_seed, config) as game:
+        assert game.satiety_level == pytest.approx(initial_satiety)
+        assert game.hydration_level == pytest.approx(initial_hydration)
+
         fov1 = game.fov
 
         reward = game.tick(xdgame.Action.NOP)

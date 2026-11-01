@@ -879,6 +879,8 @@ xdgame_config_t *xdgame_default_config(void)
         .bean_density = 0.01F,
         .bean_biome_size = 1000,
 
+        .initial_satiety = MAX_SATIETY_LEVEL,
+        .initial_hydration = MAX_HYDRATION_LEVEL,
         .needs_decay = 0.1F,
 
         .satiety_bean_satiety_gain = 3.F,
@@ -912,6 +914,12 @@ xdgame_state_t *xdgame_new_game(uint32_t seed, const xdgame_config_t *cfg)
         || cfg->bean_density > 1.0F                         //
         || cfg->bean_biome_size == 0                        //
         || cfg->bean_biome_size > INT32_MAX                 //
+        || !isfinite(cfg->initial_satiety)                  //
+        || cfg->initial_satiety < MIN_SATIETY_LEVEL         //
+        || cfg->initial_satiety > MAX_SATIETY_LEVEL         //
+        || !isfinite(cfg->initial_hydration)                //
+        || cfg->initial_hydration < MIN_HYDRATION_LEVEL     //
+        || cfg->initial_hydration > MAX_HYDRATION_LEVEL     //
         || !isfinite(cfg->needs_decay)                      //
         || !isfinite(cfg->satiety_bean_satiety_gain)        //
         || !isfinite(cfg->hydration_bean_hydration_gain)    //
@@ -943,8 +951,8 @@ xdgame_state_t *xdgame_new_game(uint32_t seed, const xdgame_config_t *cfg)
         .world_seed = world_seed,
         .agent_pos = {.x = 0, .y = 0},
         .t = 0,
-        .satiety = MAX_SATIETY_LEVEL,
-        .hydration = MAX_HYDRATION_LEVEL,
+        .satiety = cfg->initial_satiety,
+        .hydration = cfg->initial_hydration,
         .inventory = NO_BEAN,
         .last_eaten_flavor = NO_BEAN,
         .pang_ticks = NULL,

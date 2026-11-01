@@ -74,9 +74,10 @@ typedef enum xdgame_bean_variants
  *   delay.
  * - A bitter bean applies an immediate reward penalty.
  *
- * Satiety and hydration are measured in level points. Both start at 100 and
- * change every tick according to \c needs_decay. A level below zero contributes
- * that negative value to the tick reward.
+ * Satiety and hydration are measured in level points. Their initial values are
+ * configurable and default to 100. Both change every tick according to
+ * \c needs_decay. A level below zero contributes that negative value to the
+ * tick reward.
  *
  * The \c bean_variants member must contain one of the declared
  * ::xdgame_bean_variants_t values. Every floating-point member must be finite;
@@ -119,6 +120,20 @@ typedef struct xdgame_config
      * patch-coordinate limit caps that span at 6,815,744 cells.
      */
     uint32_t bean_biome_size;
+
+    /**
+     * Initial satiety level in [-100, 100].
+     *
+     * A negative value contributes to the reward from the first tick onward.
+     */
+    float initial_satiety;
+
+    /**
+     * Initial hydration level in [-100, 100].
+     *
+     * A negative value contributes to the reward from the first tick onward.
+     */
+    float initial_hydration;
 
     /**
      * Value subtracted from satiety and hydration every tick, in level points.
