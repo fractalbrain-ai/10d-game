@@ -7,7 +7,7 @@
 #define XDGAME_VERSION_MAJOR 0U
 
 /** Minor component of the engine version. */
-#define XDGAME_VERSION_MINOR 3U
+#define XDGAME_VERSION_MINOR 4U
 
 /** Patch component of the engine version. */
 #define XDGAME_VERSION_PATCH 0U
