@@ -65,17 +65,16 @@ output tokens across all attempts, or `n/a` when usage is unavailable. Add
 
 ## Continue a run
 
-After successful completion, a checkpoint is saved beside the log with the
-same run name. Default logs use `.log.jsonl`; checkpoints use
-`.checkpoint.json`. For example,
+After successful completion, a checkpoint is saved beside the log by appending
+`.checkpoint.json` to the complete log filename. For example,
 `logs/run-20261101T120000Z-seed_42.log.jsonl` is paired with
-`logs/run-20261101T120000Z-seed_42.checkpoint.json`. The checkpoint contains
+`logs/run-20261101T120000Z-seed_42.log.jsonl.checkpoint.json`. The checkpoint contains
 three fields: `seed`, `actions`, and `memory`. Use the checkpoint path printed
 at completion to continue from 25 to 50 steps:
 
 ```bash
 uv run --project bindings/python llm-agent/play.py \
-    --checkpoint llm-agent/logs/run-20261101T120000Z-seed_42.checkpoint.json \
+    --checkpoint llm-agent/logs/run-20261101T120000Z-seed_42.log.jsonl.checkpoint.json \
     --steps 50
 ```
 
@@ -84,6 +83,11 @@ and previous actions are replayed without model calls. Use the same engine and
 game configuration. If a checkpoint ends between block boundaries, the first
 block ends at the next multiple of `--in-context-steps`. Without `--checkpoint`,
 a new game starts. Interrupted or failed runs do not write a new checkpoint.
+
+Existing log files and checkpoints are never overwritten. An existing output
+checkpoint is rejected before any model requests; choose another `--log` path
+to save a new run. Checkpoint files created by earlier versions can still be
+loaded with `--checkpoint`.
 
 ## Recorded output
 
@@ -101,6 +105,17 @@ the game or updating memory. Each retry reports the rejection reason in
 `reply_error`, plus valid action names for action requests. The tenth failure
 stops the program. API and transport errors stop immediately.
 Logs, checkpoints, and `progress.txt` are ignored by Git.
+
+## Tests
+
+From the repository root, run the checkpoint regression tests with:
+
+```bash
+python3 -m unittest discover -s llm-agent -p 'test_*.py'
+```
+
+These tests use a fake game and model endpoint; they do not require an API key,
+network access, or a compiled engine.
 
 [uv]: https://docs.astral.sh/uv/
 [Python bindings]: ../bindings/python/README.md

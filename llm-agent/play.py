@@ -302,6 +302,10 @@ def main():
             log_path = log_path.with_name(f"{stem}-{number}.log.jsonl")
             number += 1
 
+    checkpoint_path = log_path.with_name(log_path.name + ".checkpoint.json")
+    if os.path.lexists(checkpoint_path):
+        parser.error(f"checkpoint already exists: {checkpoint_path}; choose another --log")
+
     log_path.parent.mkdir(parents=True, exist_ok=True)
 
     reward = None
@@ -380,17 +384,14 @@ def main():
                 messages = [{"role": "system", "content": instructions}]
                 episode_start = step
 
-        checkpoint_path = log_path.with_name(
-            log_path.stem.removesuffix(".log") + ".checkpoint.json"
-        )
-
-        checkpoint_path.write_text(
-            json.dumps(
-                {"seed": args.seed, "actions": actions, "memory": memory},
-                ensure_ascii=False,
+        with checkpoint_path.open("x", encoding="utf-8") as checkpoint:
+            checkpoint.write(
+                json.dumps(
+                    {"seed": args.seed, "actions": actions, "memory": memory},
+                    ensure_ascii=False,
+                )
+                + "\n"
             )
-            + "\n"
-        )
 
         record(log, "end", args.steps, memory=memory)
         banner(

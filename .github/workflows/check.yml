@@ -62,3 +62,6 @@ jobs:
             - name: Run Python tests
               working-directory: bindings/python
               run: uv run --frozen --group dev pytest
+
+            - name: Run LLM runner regression tests
+              run: python -m unittest discover -s llm-agent -p 'test_*.py'
